@@ -1,0 +1,273 @@
+// Prisma Schema for Supreset - 混音预设分享平台
+// 文档: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 用户表 - 记录网站用户基础信息
+// ==========================================
+model User {
+  id                Int                @id @default(autoincrement())
+  name              String             @unique @db.VarChar(50)
+  email             String             @unique @db.VarChar(255)
+  password          String             @db.VarChar(255)
+  avatar            String?            @db.VarChar(500)
+  bio               String?            @db.Text
+  role              String             @default("user") @db.VarChar(20)
+  mustChangePassword Boolean           @default(true) @map("must_change_password")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  presets           Preset[]
+  comments          Comment[]
+  downloads         DownloadHistory[]
+  likes             Like[]
+  favorites         Favorite[]
+  donations         Donation[]         @relation("UserDonations")
+  receivedDonations Donation[]         @relation("CreatorDonations")
+  notifications     Notification[]
+  events            Event[]
+  eventInterests    EventInterest[]
+
+  @@index([email])
+  @@index([name])
+  @@map("users")
+}
+
+// ==========================================
+// 混音预设表 - 存储上传的工程文件或预设
+// ==========================================
+model Preset {
+  id             Int                @id @default(autoincrement())
+  title          String             @db.VarChar(255)
+  description    String?            @db.Text
+  daw            String             @db.VarChar(50)
+  format         String             @db.VarChar(20)
+  filePath       String             @map("file_path") @db.VarChar(500)
+  fileSize       Int                @map("file_size")
+  files          Json?              @db.Json // 存储多个文件信息 [{filePath, fileSize, originalName}]
+  coverImage     String?            @map("cover_image") @db.VarChar(500)
+  downloads      Int                @default(0)
+  likesCount     Int                @default(0) @map("likes_count")
+  favoritesCount Int                @default(0) @map("favorites_count")
+  isPublic       Boolean            @default(true) @map("is_public")
+  previewAudio   String?            @map("preview_audio") @db.VarChar(500)
+  deletedAt      DateTime?          @map("deleted_at") // 软删除时间戳
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  userId         Int                @map("user_id")
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tags           TagOnPreset[]
+  comments       Comment[]
+  downloadsLog   DownloadHistory[]
+  likes          Like[]
+  favorites      Favorite[]
+  donations      Donation[]
+
+  @@index([userId])
+  @@index([daw])
+  @@index([createdAt])
+  @@index([downloads])
+  @@map("presets")
+}
+
+// ==========================================
+// 标签表 - 用于风格分类（Trap, Boom Bap, Drill等）
+// ==========================================
+model Tag {
+  id      Int           @id @default(autoincrement())
+  name    String        @unique @db.VarChar(50)
+  presets TagOnPreset[]
+
+  @@map("tags")
+}
+
+// 多对多中间表 - 预设与标签关联
+model TagOnPreset {
+  presetId Int
+  tagId    Int
+
+  preset Preset @relation(fields: [presetId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([presetId, tagId])
+  @@index([presetId])
+  @@index([tagId])
+  @@map("tag_on_preset")
+}
+
+// ==========================================
+// 下载记录表 - 存储每个用户下载行为
+// ==========================================
+model DownloadHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  presetId  Int      @map("preset_id")
+  ipAddress String?  @map("ip_address") @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  preset Preset @relation(fields: [presetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, presetId], name: "unique_user_preset_download")
+  @@index([userId])
+  @@index([presetId])
+  @@index([createdAt])
+  @@map("download_history")
+}
+
+// ==========================================
+// 点赞表
+// ==========================================
+model Like {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  presetId  Int      @map("preset_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preset Preset @relation(fields: [presetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, presetId])
+  @@index([userId])
+  @@index([presetId])
+  @@map("likes")
+}
+
+// ==========================================
+// 收藏表
+// ==========================================
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  presetId  Int      @map("preset_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preset Preset @relation(fields: [presetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, presetId])
+  @@index([userId])
+  @@index([presetId])
+  @@map("favorites")
+}
+
+// ==========================================
+// 评论表 - 支持嵌套回复
+// ==========================================
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  presetId  Int      @map("preset_id")
+  userId    Int      @map("user_id")
+  parentId  Int?     @map("parent_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  preset Preset @relation(fields: [presetId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([presetId])
+  @@index([userId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+// ==========================================
+// 打赏表 - 支持创作者
+// ==========================================
+model Donation {
+  id        Int      @id @default(autoincrement())
+  amount    Int
+  currency  String   @default("CNY") @db.VarChar(10)
+  donorId   Int      @map("donor_id")
+  creatorId Int      @map("creator_id")
+  presetId  Int?     @map("preset_id")
+  message   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  donor   User    @relation("UserDonations", fields: [donorId], references: [id], onDelete: Cascade)
+  creator User    @relation("CreatorDonations", fields: [creatorId], references: [id], onDelete: Cascade)
+  preset  Preset? @relation(fields: [presetId], references: [id], onDelete: SetNull)
+
+  @@index([donorId])
+  @@index([creatorId])
+  @@index([presetId])
+  @@map("donations")
+}
+
+// ==========================================
+// 通知/消息表 - 系统通知
+// ==========================================
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  title     String   @db.VarChar(255)
+  content   String   @db.Text
+  link      String?  @db.VarChar(500)
+  read      Boolean  @default(false)
+  type      String   @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ==========================================
+// 活动表 - 现场专栏，派对组织者宣传活动
+// ==========================================
+model Event {
+  id              Int             @id @default(autoincrement())
+  title           String           @db.VarChar(255)
+  description     String?          @db.Text
+  coverImage      String?          @map("cover_image") @db.VarChar(500)
+  startTime       DateTime         @map("start_time")
+  endTime         DateTime?        @map("end_time")
+  location        String?          @db.VarChar(255)
+  views           Int              @default(0)
+  interestedCount Int              @default(0) @map("interested_count")
+  status          String           @default("draft") @db.VarChar(20) // draft, published, ended
+  organizerId     Int              @map("organizer_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  organizer       User             @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  interestedUsers EventInterest[]
+
+  @@index([organizerId])
+  @@index([status])
+  @@index([startTime])
+  @@index([createdAt])
+  @@map("events")
+}
+
+// ==========================================
+// 活动感兴趣表 - 标记想去
+// ==========================================
+model EventInterest {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  eventId   Int      @map("event_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+  @@map("event_interests")
+}
