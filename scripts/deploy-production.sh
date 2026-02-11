@@ -113,6 +113,13 @@ FILE_COUNT=$(find public/uploads/presets -type f 2>/dev/null | wc -l)
 log "${GREEN}✅ 上传目录检查完成 (已有文件: $FILE_COUNT)${NC}"
 log ""
 
+# 离线环境保护：避免构建时因 Google Fonts 访问失败而中断
+if grep -R --line-number --include="*.ts" --include="*.tsx" "next/font/google" src/app src/components >/dev/null 2>&1; then
+  log "${RED}❌ 检测到 next/font/google 依赖。当前服务器网络无法稳定访问 Google Fonts，构建会失败。${NC}"
+  log "${YELLOW}请先移除 next/font/google（改为本地字体或系统字体）后再部署。${NC}"
+  exit 1
+fi
+
 # 步骤 7: 构建项目
 log "${YELLOW}[7/8] 构建项目...${NC}"
 if npm run build 2>&1 | grep -v "baseline-browser-mapping" | grep -v "middleware"; then
