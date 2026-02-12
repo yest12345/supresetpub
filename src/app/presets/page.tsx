@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import PresetCard from '../../components/PresetCard';
 import UploadModal from '../../components/UploadModal';
 
@@ -127,9 +128,17 @@ export default function PresetsPage() {
           {/* Header */}
           <div className="mb-8 flex items-start justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                预设广场
-              </h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                  预设广场
+                </h1>
+                <Link
+                  href="/disclaimer"
+                  className="text-sm px-3 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  免责声明
+                </Link>
+              </div>
               <p className="text-gray-600 dark:text-gray-400">
                 探索和下载专业的音乐制作预设
               </p>
