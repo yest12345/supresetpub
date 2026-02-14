@@ -43,6 +43,24 @@ model User {
 }
 
 // ==========================================
+// 邮箱验证码 - 用于邮箱登录/注册
+// ==========================================
+model EmailVerificationCode {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique @db.VarChar(255)
+  codeHash   String   @db.VarChar(255)
+  expiresAt  DateTime @map("expires_at")
+  lastSentAt DateTime @map("last_sent_at")
+  attempts   Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([expiresAt])
+  @@map("email_verification_codes")
+}
+
+// ==========================================
 // 混音预设表 - 存储上传的工程文件或预设
 // ==========================================
 model Preset {

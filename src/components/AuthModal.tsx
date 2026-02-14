@@ -98,12 +98,6 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
           登录
         </h2>
 
-        {/* 内测版提示 */}
-        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded-lg text-sm">
-          <p className="font-medium">内测版本</p>
-          <p className="text-xs mt-1">当前为内测版本，账户由管理员分配。现在支持使用邮箱或分配的ID登录。</p>
-        </div>
-
         {/* 表单 */}
         <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -120,9 +114,6 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
               placeholder="请输入邮箱或账户ID"
               required
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              内测账户：使用邮箱或分配的账户ID，配合默认密码登录
-            </p>
           </div>
 
           <div>

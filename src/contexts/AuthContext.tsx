@@ -18,6 +18,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithCode: (email: string, code: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
@@ -101,6 +102,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // 邮箱验证码登录
+  const loginWithCode = async (email: string, code: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      const { user, token, mustChangePassword } = data.data;
+
+      // 保存 token 到 cookie
+      Cookies.set(TOKEN_KEY, token, { expires: 7 });
+
+      setUser({ ...user, mustChangePassword });
+      setToken(token);
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
   // 注册
   const register = async (name: string, email: string, password: string) => {
     try {
@@ -141,7 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, loginWithCode, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
