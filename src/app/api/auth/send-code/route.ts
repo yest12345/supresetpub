@@ -33,11 +33,12 @@ export async function POST(request: NextRequest) {
       const elapsedSeconds = Math.floor(
         (Date.now() - existing.lastSentAt.getTime()) / 1000
       )
+
       if (elapsedSeconds < CODE_COOLDOWN_SECONDS) {
         return NextResponse.json(
           {
             success: false,
-            error: `发送过于频繁，请${CODE_COOLDOWN_SECONDS - elapsedSeconds}s后再试`
+            error: `发送过于频繁，请 ${CODE_COOLDOWN_SECONDS - elapsedSeconds}s 后再试`
           },
           { status: 429 }
         )
@@ -78,10 +79,12 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ success: true, message: '验证码已发送' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Send code error:', error)
+    const message = error instanceof Error ? error.message : '未知错误'
+
     return NextResponse.json(
-      { success: false, error: '发送验证码失败: ' + error.message },
+      { success: false, error: `发送验证码失败: ${message}` },
       { status: 500 }
     )
   }
