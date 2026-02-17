@@ -1,6 +1,6 @@
 /**
- * PM2 进程管理配置文件
- * 使用方法: pm2 start ecosystem.config.js
+ * PM2 process config
+ * Usage: pm2 start ecosystem.config.js
  */
 
 module.exports = {
@@ -22,11 +22,6 @@ module.exports = {
     autorestart: true,
     max_memory_restart: '1G',
     watch: false,
-    // 优雅重启
-    kill_timeout: 5000,
-    wait_ready: true,
-    listen_timeout: 10000
+    kill_timeout: 5000
   }]
 }
-
-
