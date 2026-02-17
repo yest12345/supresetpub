@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@/generated/prisma'
 
 // PrismaClient 单例模式，避免在开发环境中创建多个实例
 const globalForPrisma = globalThis as unknown as {
