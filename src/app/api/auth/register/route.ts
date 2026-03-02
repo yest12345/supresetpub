@@ -1,73 +1,106 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword, generateToken } from '@/lib/auth'
+import { randomBytes } from 'crypto'
 
 /**
- * POST /api/auth/register - 用户注册（已禁用 - 内测版）
- * 内测版本不允许公开注册，账户由管理员分配
+ * POST /api/auth/register - 用户注册
+ * 支持自由注册：用户名 + 密码 + 确认密码
  */
+export const runtime = 'nodejs'
+
+const USERNAME_MIN_LENGTH = 3
+const USERNAME_MAX_LENGTH = 20
+const PASSWORD_MIN_LENGTH = 8
+const PASSWORD_MAX_LENGTH = 64
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/
+
+function isValidUsername(name: string) {
+  if (name.length < USERNAME_MIN_LENGTH || name.length > USERNAME_MAX_LENGTH) {
+    return false
+  }
+  if (/\s/.test(name)) {
+    return false
+  }
+  if (/^\d+$/.test(name)) {
+    return false
+  }
+  return true
+}
+
+function isStrongPassword(password: string) {
+  if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
+    return false
+  }
+  return PASSWORD_REGEX.test(password)
+}
+
+async function generateUniquePlaceholderEmail() {
+  while (true) {
+    const candidate = `user-${Date.now()}-${randomBytes(4).toString('hex')}@local.supreset.pub`
+    const existing = await prisma.user.findUnique({
+      where: { email: candidate }
+    })
+    if (!existing) return candidate
+  }
+}
+
 export async function POST(request: NextRequest) {
-  return NextResponse.json(
-    { 
-      success: false, 
-      error: '当前为内测版本，暂不开放注册。如需账户，请联系管理员分配。' 
-    },
-    { status: 403 }
-  )
-  
-  // 以下代码已禁用，保留用于参考
-  /*
   try {
     const body = await request.json()
-    const { name, email, password } = body
+    const name = String(body?.name || '').trim()
+    const password = String(body?.password || '')
+    const confirmPassword = String(body?.confirmPassword || '')
 
-    // 验证必填字段
-    if (!name || !email || !password) {
+    if (!name || !password || !confirmPassword) {
       return NextResponse.json(
-        { success: false, error: 'Name, email and password are required' },
+        { success: false, error: '用户名、密码和确认密码都是必填项' },
         { status: 400 }
       )
     }
 
-    // 验证邮箱格式
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
+    if (!isValidUsername(name)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid email format' },
+        { success: false, error: '用户名需为 3-20 位，不能含空格，且不能为纯数字' },
         { status: 400 }
       )
     }
 
-    // 验证密码长度
-    if (password.length < 6) {
+    if (password !== confirmPassword) {
       return NextResponse.json(
-        { success: false, error: 'Password must be at least 6 characters' },
+        { success: false, error: '两次输入的密码不一致' },
         { status: 400 }
       )
     }
 
-    // 检查邮箱是否已存在
+    if (!isStrongPassword(password)) {
+      return NextResponse.json(
+        { success: false, error: '密码需为 8-64 位，且包含大小写字母、数字和特殊字符' },
+        { status: 400 }
+      )
+    }
+
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { name }
     })
 
     if (existingUser) {
       return NextResponse.json(
-        { success: false, error: 'Email already registered' },
+        { success: false, error: '该用户名已被使用，请换一个用户名' },
         { status: 400 }
       )
     }
 
-    // 加密密码
+    const placeholderEmail = await generateUniquePlaceholderEmail()
     const hashedPassword = await hashPassword(password)
 
-    // 创建用户
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: placeholderEmail,
         password: hashedPassword,
-        role: 'user'
+        role: 'user',
+        mustChangePassword: false
       },
       select: {
         id: true,
@@ -75,11 +108,12 @@ export async function POST(request: NextRequest) {
         email: true,
         role: true,
         avatar: true,
-        createdAt: true
+        bio: true,
+        createdAt: true,
+        mustChangePassword: true
       }
     })
 
-    // 生成 token
     const token = generateToken({
       id: user.id,
       email: user.email,
@@ -87,20 +121,31 @@ export async function POST(request: NextRequest) {
       role: user.role
     })
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        user,
-        token
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          user,
+          token,
+          mustChangePassword: user.mustChangePassword
+        },
+        message: '注册成功'
       },
-      message: 'Registration successful'
-    }, { status: 201 })
+      { status: 201 }
+    )
   } catch (error: any) {
     console.error('Registration error:', error)
+
+    if (error?.code === 'P2002') {
+      return NextResponse.json(
+        { success: false, error: '用户名已存在，请更换后重试' },
+        { status: 400 }
+      )
+    }
+
     return NextResponse.json(
-      { success: false, error: 'Registration failed: ' + error.message },
+      { success: false, error: '注册失败，请稍后重试' },
       { status: 500 }
     )
   }
-  */
 }

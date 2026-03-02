@@ -17,9 +17,9 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   loginWithCode: (email: string, code: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, password: string, confirmPassword: string) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
 }
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadUser();
   }, []);
 
-  // 登录（支持使用账户ID或邮箱）
+  // 登录（支持使用账户ID、邮箱或用户名）
   const login = async (identifier: string, password: string) => {
     try {
       const response = await fetch('/api/auth/login', {
@@ -130,12 +130,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 注册
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, password: string, confirmPassword: string) => {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, password, confirmPassword })
       });
 
       const data = await response.json();
@@ -144,12 +144,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.error || 'Registration failed');
       }
 
-      const { user, token } = data.data;
+      const { user, token, mustChangePassword } = data.data;
       
       // 保存 token 到 cookie
       Cookies.set(TOKEN_KEY, token, { expires: 7 });
       
-      setUser(user);
+      setUser({ ...user, mustChangePassword });
       setToken(token);
     } catch (error: any) {
       throw error;

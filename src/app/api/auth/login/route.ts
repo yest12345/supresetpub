@@ -106,26 +106,28 @@ async function handleEmailCodeLogin(email: string, code: string) {
 }
 
 async function handlePasswordLogin(identifier: string, password: string) {
-  if (!identifier || !password) {
+  const normalizedIdentifier = identifier.trim()
+
+  if (!normalizedIdentifier || !password) {
     return NextResponse.json(
       { success: false, error: '账号和密码都是必填项' },
       { status: 400 }
     )
   }
 
-  const isEmail = EMAIL_REGEX.test(identifier)
-  const isNumeric = /^\d+$/.test(identifier)
+  const isEmail = EMAIL_REGEX.test(normalizedIdentifier)
+  const isNumeric = /^\d+$/.test(normalizedIdentifier)
 
   let user = null
   if (isEmail) {
-    user = await prisma.user.findUnique({ where: { email: identifier } })
+    user = await prisma.user.findUnique({ where: { email: normalizedIdentifier } })
   } else if (isNumeric) {
-    user = await prisma.user.findUnique({ where: { id: parseInt(identifier, 10) } })
+    user = await prisma.user.findUnique({ where: { id: parseInt(normalizedIdentifier, 10) } })
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { name: normalizedIdentifier } })
+    }
   } else {
-    return NextResponse.json(
-      { success: false, error: '请输入正确的账号格式（邮箱或数字ID）' },
-      { status: 400 }
-    )
+    user = await prisma.user.findUnique({ where: { name: normalizedIdentifier } })
   }
 
   if (!user) {
@@ -173,7 +175,7 @@ async function handlePasswordLogin(identifier: string, password: string) {
  * POST /api/auth/login
  * 支持：
  * - 邮箱 + 验证码登录/注册
- * - 账号ID/邮箱 + 密码登录
+ * - 账号ID/邮箱/用户名 + 密码登录
  */
 export async function POST(request: NextRequest) {
   try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthModalProps {
@@ -9,37 +9,33 @@ interface AuthModalProps {
   defaultMode?: 'login' | 'register';
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const COUNTDOWN_SECONDS = 60;
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 20;
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 64;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/;
 
 export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>(defaultMode);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [registerEmail, setRegisterEmail] = useState('');
-  const [registerCode, setRegisterCode] = useState('');
-  const [agreed, setAgreed] = useState(false);
+  const [registerName, setRegisterName] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [countdown, setCountdown] = useState(0);
 
-  const { login, loginWithCode } = useAuth();
-
-  const normalizedRegisterEmail = registerEmail.trim().toLowerCase();
-  const isRegisterEmailValid = EMAIL_REGEX.test(normalizedRegisterEmail);
+  const { login, register } = useAuth();
 
   const resetForm = () => {
     setIdentifier('');
     setPassword('');
-    setRegisterEmail('');
-    setRegisterCode('');
-    setAgreed(false);
+    setRegisterName('');
+    setRegisterPassword('');
+    setConfirmPassword('');
     setError('');
     setLoading(false);
-    setSending(false);
-    setCountdown(0);
   };
 
   useEffect(() => {
@@ -48,14 +44,6 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
       setError('');
     }
   }, [defaultMode, isOpen]);
-
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -90,43 +78,13 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
     }
   };
 
-  const handleSendCode = async () => {
-    if (!isRegisterEmailValid) {
-      setError('请输入正确的邮箱地址');
-      return;
-    }
-
-    setError('');
-    setSending(true);
-
-    try {
-      const response = await fetch('/api/auth/send-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedRegisterEmail })
-      });
-
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || '验证码发送失败');
-      }
-
-      setCountdown(COUNTDOWN_SECONDS);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : '验证码发送失败';
-      setError(message);
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const handleLoginSubmit = async (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await login(identifier, password);
+      await login(identifier.trim(), password);
       resetForm();
       onClose();
     } catch (err: unknown) {
@@ -137,29 +95,45 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
     }
   };
 
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!isRegisterEmailValid) {
-      setError('请输入正确的邮箱地址');
+    const normalizedRegisterName = registerName.trim();
+
+    if (normalizedRegisterName.length < USERNAME_MIN_LENGTH || normalizedRegisterName.length > USERNAME_MAX_LENGTH) {
+      setError(`用户名需为 ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} 位`);
       return;
     }
 
-    if (registerCode.trim().length !== 6) {
-      setError('请输入 6 位验证码');
+    if (/\s/.test(normalizedRegisterName)) {
+      setError('用户名不能包含空格');
       return;
     }
 
-    if (!agreed) {
-      setError('请先勾选同意服务协议');
+    if (/^\d+$/.test(normalizedRegisterName)) {
+      setError('用户名不能是纯数字');
+      return;
+    }
+
+    if (registerPassword !== confirmPassword) {
+      setError('两次输入的密码不一致');
+      return;
+    }
+
+    if (
+      registerPassword.length < PASSWORD_MIN_LENGTH ||
+      registerPassword.length > PASSWORD_MAX_LENGTH ||
+      !PASSWORD_REGEX.test(registerPassword)
+    ) {
+      setError('密码需为 8-64 位，且包含大小写字母、数字和特殊字符');
       return;
     }
 
     setLoading(true);
 
     try {
-      await loginWithCode(normalizedRegisterEmail, registerCode.trim());
+      await register(normalizedRegisterName, registerPassword, confirmPassword);
       resetForm();
       onClose();
     } catch (err: unknown) {
@@ -228,12 +202,12 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
         {mode === 'login' ? (
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300">
-              使用邮箱或账号 ID + 密码登录
+              使用邮箱、用户名或账号 ID + 密码登录
             </div>
 
             <div>
               <label htmlFor="identifier" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                邮箱或账号 ID
+                邮箱 / 用户名 / 账号 ID
               </label>
               <input
                 id="identifier"
@@ -241,7 +215,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                placeholder="例如 you@example.com 或 2025100901"
+                placeholder="例如 you@example.com 或 beatmaker_01"
                 required
               />
             </div>
@@ -258,7 +232,6 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 placeholder="请输入密码"
                 required
-                minLength={6}
               />
             </div>
 
@@ -279,61 +252,63 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
         ) : (
           <form onSubmit={handleRegisterSubmit} className="space-y-4">
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300">
-              使用邮箱验证码注册，验证通过后自动创建账号并登录
+              自由注册账号：设置不重复用户名和安全密码，注册后自动登录
             </div>
 
             <div>
-              <label htmlFor="registerEmail" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                邮箱
+              <label htmlFor="registerName" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                用户名
               </label>
               <input
-                id="registerEmail"
-                type="email"
-                value={registerEmail}
-                onChange={(e) => setRegisterEmail(e.target.value)}
+                id="registerName"
+                type="text"
+                value={registerName}
+                onChange={(e) => setRegisterName(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                placeholder="you@example.com"
+                placeholder="3-20 位，不能含空格，不能纯数字"
                 required
+                minLength={USERNAME_MIN_LENGTH}
+                maxLength={USERNAME_MAX_LENGTH}
               />
             </div>
 
             <div>
-              <label htmlFor="registerCode" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                验证码
+              <label htmlFor="registerPassword" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                密码
               </label>
-              <div className="flex gap-2">
-                <input
-                  id="registerCode"
-                  type="text"
-                  inputMode="numeric"
-                  value={registerCode}
-                  onChange={(e) => setRegisterCode(e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                  placeholder="6 位验证码"
-                  required
-                  minLength={6}
-                  maxLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={handleSendCode}
-                  disabled={!isRegisterEmailValid || sending || countdown > 0}
-                  className="whitespace-nowrap rounded-lg border border-emerald-600 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 dark:border-emerald-400 dark:text-emerald-300"
-                >
-                  {countdown > 0 ? `已发送 (${countdown}s)` : sending ? '发送中...' : '获取验证码'}
-                </button>
-              </div>
+              <input
+                id="registerPassword"
+                type="password"
+                value={registerPassword}
+                onChange={(e) => setRegisterPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                placeholder="请输入密码"
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+              />
             </div>
 
-            <label className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
+            <div>
+              <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                确认密码
+              </label>
               <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                placeholder="请再次输入密码"
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
               />
-              <span>我已阅读并同意服务协议</span>
-            </label>
+            </div>
+
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+              密码要求：8-64 位，至少包含 1 个大写字母、1 个小写字母、1 个数字和 1 个特殊字符
+            </p>
 
             {error && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
@@ -343,7 +318,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
 
             <button
               type="submit"
-              disabled={loading || !agreed}
+              disabled={loading}
               className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-emerald-400"
             >
               {loading ? '注册中...' : '立即注册'}

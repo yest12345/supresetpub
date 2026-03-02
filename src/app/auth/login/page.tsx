@@ -1,82 +1,92 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const COUNTDOWN_SECONDS = 60;
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 20;
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 64;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/;
 
 type Mode = "login" | "register";
 
-export default function EmailCodeLoginPage() {
-  const { loginWithCode } = useAuth();
+export default function LoginPage() {
+  const { login, register } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [agreed, setAgreed] = useState(false);
-  const [sending, setSending] = useState(false);
+
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [registerName, setRegisterName] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0);
 
-  const normalizedEmail = email.trim().toLowerCase();
-  const isEmailValid = EMAIL_REGEX.test(normalizedEmail);
-  const isCodeValid = code.trim().length === 6;
+  const handleLogin = async (event: FormEvent) => {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
 
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
-
-  const handleSendCode = async () => {
-    setSending(true);
     try {
-      const response = await fetch("/api/auth/send-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail }),
-      });
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "验证码发送失败");
+      await login(identifier.trim(), password);
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
       }
-
-      setCountdown(COUNTDOWN_SECONDS);
-      window.alert("发送成功");
-    } catch (error: any) {
-      window.alert(error.message || "验证码发送失败");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "登录失败，请重试";
+      setError(message);
     } finally {
-      setSending(false);
+      setLoading(false);
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleRegister = async (event: FormEvent) => {
     event.preventDefault();
-    const trimmedCode = code.trim();
+    setError("");
 
-    if (!isEmailValid) {
-      window.alert("请输入正确的邮箱格式");
+    const normalizedName = registerName.trim();
+    if (normalizedName.length < USERNAME_MIN_LENGTH || normalizedName.length > USERNAME_MAX_LENGTH) {
+      setError(`用户名需为 ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} 位`);
       return;
     }
-    if (trimmedCode.length !== 6) {
-      window.alert("请输入 6 位验证码");
+
+    if (/\s/.test(normalizedName)) {
+      setError("用户名不能包含空格");
       return;
     }
-    if (mode === "register" && !agreed) {
-      window.alert("请先同意服务协议");
+
+    if (/^\d+$/.test(normalizedName)) {
+      setError("用户名不能是纯数字");
+      return;
+    }
+
+    if (registerPassword !== confirmPassword) {
+      setError("两次输入的密码不一致");
+      return;
+    }
+
+    if (
+      registerPassword.length < PASSWORD_MIN_LENGTH ||
+      registerPassword.length > PASSWORD_MAX_LENGTH ||
+      !PASSWORD_REGEX.test(registerPassword)
+    ) {
+      setError("密码需为 8-64 位，且包含大小写字母、数字和特殊字符");
       return;
     }
 
     setLoading(true);
+
     try {
-      await loginWithCode(normalizedEmail, trimmedCode);
+      await register(normalizedName, registerPassword, confirmPassword);
       if (typeof window !== "undefined") {
         window.location.href = "/";
       }
-    } catch (error: any) {
-      window.alert(error.message || "登录失败");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "注册失败，请重试";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -91,13 +101,18 @@ export default function EmailCodeLoginPage() {
               {mode === "login" ? "欢迎回来" : "创建新账号"}
             </h1>
             <p className="mt-2 text-sm text-neutral-500">
-              请输入邮箱获取验证码，5 分钟内有效
+              {mode === "login"
+                ? "使用邮箱、用户名或账号 ID + 密码登录"
+                : "输入不重复用户名并设置安全密码后即可注册"}
             </p>
           </div>
           <div className="rounded-full bg-neutral-100 p-1 text-xs font-medium text-neutral-600">
             <button
               type="button"
-              onClick={() => setMode("login")}
+              onClick={() => {
+                setMode("login");
+                setError("");
+              }}
               className={`rounded-full px-3 py-1 transition ${
                 mode === "login"
                   ? "bg-neutral-900 text-white"
@@ -108,7 +123,10 @@ export default function EmailCodeLoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => setMode("register")}
+              onClick={() => {
+                setMode("register");
+                setError("");
+              }}
               className={`rounded-full px-3 py-1 transition ${
                 mode === "register"
                   ? "bg-neutral-900 text-white"
@@ -120,78 +138,124 @@ export default function EmailCodeLoginPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-neutral-700">
-              邮箱
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="code" className="text-sm font-medium text-neutral-700">
-              验证码
-            </label>
-            <div className="flex gap-2">
+        {mode === "login" ? (
+          <form onSubmit={handleLogin} className="mt-6 space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="identifier" className="text-sm font-medium text-neutral-700">
+                邮箱 / 用户名 / 账号 ID
+              </label>
               <input
-                id="code"
+                id="identifier"
                 type="text"
-                inputMode="numeric"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="6 位验证码"
-                className="flex-1 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="例如 you@example.com 或 beatmaker_01"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
                 required
-                minLength={6}
-                maxLength={6}
               />
-              <button
-                type="button"
-                onClick={handleSendCode}
-                disabled={!isEmailValid || sending || countdown > 0}
-                className="whitespace-nowrap rounded-lg border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {countdown > 0
-                  ? `已发送 (${countdown}s)`
-                  : sending
-                    ? "发送中..."
-                    : "获取验证码"}
-              </button>
             </div>
-          </div>
 
-          {mode === "register" && (
-            <label className="flex items-start gap-2 text-sm text-neutral-600">
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-neutral-700">
+                密码
+              </label>
               <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="请输入密码"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                required
               />
-              <span>我已阅读并同意服务协议</span>
-            </label>
-          )}
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading || (mode === "register" && !agreed)}
-            className="w-full rounded-lg bg-neutral-900 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {loading
-              ? "提交中..."
-              : mode === "login"
-                ? "登录"
-                : "立即注册"}
-          </button>
-        </form>
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-neutral-900 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {loading ? "登录中..." : "登录"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleRegister} className="mt-6 space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="registerName" className="text-sm font-medium text-neutral-700">
+                用户名
+              </label>
+              <input
+                id="registerName"
+                type="text"
+                value={registerName}
+                onChange={(e) => setRegisterName(e.target.value)}
+                placeholder="3-20 位，不能含空格，不能纯数字"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                required
+                minLength={USERNAME_MIN_LENGTH}
+                maxLength={USERNAME_MAX_LENGTH}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="registerPassword" className="text-sm font-medium text-neutral-700">
+                密码
+              </label>
+              <input
+                id="registerPassword"
+                type="password"
+                value={registerPassword}
+                onChange={(e) => setRegisterPassword(e.target.value)}
+                placeholder="请输入密码"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700">
+                确认密码
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="请再次输入密码"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                maxLength={PASSWORD_MAX_LENGTH}
+              />
+            </div>
+
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              密码要求：8-64 位，至少包含 1 个大写字母、1 个小写字母、1 个数字和 1 个特殊字符
+            </p>
+
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-neutral-900 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {loading ? "注册中..." : "立即注册"}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
