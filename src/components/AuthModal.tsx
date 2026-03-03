@@ -13,7 +13,7 @@ const USERNAME_MIN_LENGTH = 3;
 const USERNAME_MAX_LENGTH = 20;
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 64;
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/;
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).+$/;
 
 export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>(defaultMode);
@@ -126,7 +126,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
       registerPassword.length > PASSWORD_MAX_LENGTH ||
       !PASSWORD_REGEX.test(registerPassword)
     ) {
-      setError('密码需为 8-64 位，且包含大小写字母、数字和特殊字符');
+      setError('密码需为 8-64 位，且至少包含字母和数字');
       return;
     }
 
@@ -307,7 +307,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
             </div>
 
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-              密码要求：8-64 位，至少包含 1 个大写字母、1 个小写字母、1 个数字和 1 个特殊字符
+              密码要求：8-64 位，至少包含 1 个字母和 1 个数字
             </p>
 
             {error && (

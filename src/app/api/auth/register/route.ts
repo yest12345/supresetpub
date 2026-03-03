@@ -13,7 +13,7 @@ const USERNAME_MIN_LENGTH = 3
 const USERNAME_MAX_LENGTH = 20
 const PASSWORD_MIN_LENGTH = 8
 const PASSWORD_MAX_LENGTH = 64
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).+$/
 
 function isValidUsername(name: string) {
   if (name.length < USERNAME_MIN_LENGTH || name.length > USERNAME_MAX_LENGTH) {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     if (!isStrongPassword(password)) {
       return NextResponse.json(
-        { success: false, error: '密码需为 8-64 位，且包含大小写字母、数字和特殊字符' },
+        { success: false, error: '密码需为 8-64 位，且至少包含字母和数字' },
         { status: 400 }
       )
     }
