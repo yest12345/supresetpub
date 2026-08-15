@@ -4,10 +4,9 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 20;
-const PASSWORD_MIN_LENGTH = 8;
-const PASSWORD_MAX_LENGTH = 64;
-const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).+$/;
+const USERNAME_MAX_LENGTH = 50;
+const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+const PASSWORD_MIN_LENGTH = 6;
 
 type Mode = "login" | "register";
 
@@ -15,7 +14,7 @@ export default function LoginPage() {
   const { login, register } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
 
-  const [identifier, setIdentifier] = useState("");
+  const [loginName, setLoginName] = useState("");
   const [password, setPassword] = useState("");
 
   const [registerName, setRegisterName] = useState("");
@@ -31,7 +30,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(identifier.trim(), password);
+      await login(loginName.trim(), password);
       if (typeof window !== "undefined") {
         window.location.href = "/";
       }
@@ -48,32 +47,26 @@ export default function LoginPage() {
     setError("");
 
     const normalizedName = registerName.trim();
-    if (normalizedName.length < USERNAME_MIN_LENGTH || normalizedName.length > USERNAME_MAX_LENGTH) {
+    if (
+      normalizedName.length < USERNAME_MIN_LENGTH ||
+      normalizedName.length > USERNAME_MAX_LENGTH
+    ) {
       setError(`用户名需为 ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} 位`);
       return;
     }
 
-    if (/\s/.test(normalizedName)) {
-      setError("用户名不能包含空格");
+    if (!USERNAME_REGEX.test(normalizedName)) {
+      setError("用户名仅允许字母、数字和下划线");
       return;
     }
 
-    if (/^\d+$/.test(normalizedName)) {
-      setError("用户名不能是纯数字");
+    if (registerPassword.length < PASSWORD_MIN_LENGTH) {
+      setError(`密码至少 ${PASSWORD_MIN_LENGTH} 位`);
       return;
     }
 
     if (registerPassword !== confirmPassword) {
       setError("两次输入的密码不一致");
-      return;
-    }
-
-    if (
-      registerPassword.length < PASSWORD_MIN_LENGTH ||
-      registerPassword.length > PASSWORD_MAX_LENGTH ||
-      !PASSWORD_REGEX.test(registerPassword)
-    ) {
-      setError("密码需为 8-64 位，且至少包含字母和数字");
       return;
     }
 
@@ -102,8 +95,8 @@ export default function LoginPage() {
             </h1>
             <p className="mt-2 text-sm text-neutral-500">
               {mode === "login"
-                ? "使用邮箱、用户名或账号 ID + 密码登录"
-                : "输入不重复用户名并设置安全密码后即可注册"}
+                ? "使用用户名 + 密码登录"
+                : "设置用户名和密码即可注册"}
             </p>
           </div>
           <div className="rounded-full bg-neutral-100 p-1 text-xs font-medium text-neutral-600">
@@ -141,17 +134,20 @@ export default function LoginPage() {
         {mode === "login" ? (
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
             <div className="space-y-2">
-              <label htmlFor="identifier" className="text-sm font-medium text-neutral-700">
-                邮箱 / 用户名 / 账号 ID
+              <label htmlFor="loginName" className="text-sm font-medium text-neutral-700">
+                用户名
               </label>
               <input
-                id="identifier"
+                id="loginName"
                 type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="例如 you@example.com 或 beatmaker_01"
+                value={loginName}
+                onChange={(e) => setLoginName(e.target.value)}
+                placeholder="例如 beatmaker_01"
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
                 required
+                minLength={USERNAME_MIN_LENGTH}
+                maxLength={USERNAME_MAX_LENGTH}
+                pattern="[a-zA-Z0-9_]+"
               />
             </div>
 
@@ -167,6 +163,7 @@ export default function LoginPage() {
                 placeholder="请输入密码"
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
                 required
+                minLength={PASSWORD_MIN_LENGTH}
               />
             </div>
 
@@ -195,11 +192,12 @@ export default function LoginPage() {
                 type="text"
                 value={registerName}
                 onChange={(e) => setRegisterName(e.target.value)}
-                placeholder="3-20 位，不能含空格，不能纯数字"
+                placeholder="3-50 位，仅字母、数字、下划线"
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
                 required
                 minLength={USERNAME_MIN_LENGTH}
                 maxLength={USERNAME_MAX_LENGTH}
+                pattern="[a-zA-Z0-9_]+"
               />
             </div>
 
@@ -212,11 +210,10 @@ export default function LoginPage() {
                 type="password"
                 value={registerPassword}
                 onChange={(e) => setRegisterPassword(e.target.value)}
-                placeholder="请输入密码"
+                placeholder="至少 6 位"
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
-                maxLength={PASSWORD_MAX_LENGTH}
               />
             </div>
 
@@ -233,13 +230,8 @@ export default function LoginPage() {
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
-                maxLength={PASSWORD_MAX_LENGTH}
               />
             </div>
-
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-              密码要求：8-64 位，至少包含 1 个字母和 1 个数字
-            </p>
 
             {error && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">

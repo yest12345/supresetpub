@@ -1,84 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword, generateToken } from '@/lib/auth'
-import { randomBytes } from 'crypto'
+import { formatZodError, registerSchema } from '@/lib/validations/auth'
 
 /**
  * POST /api/auth/register - 用户注册
- * 支持自由注册：用户名 + 密码 + 确认密码
+ * 入参：用户名 + 密码（+ 可选确认密码）
  */
 export const runtime = 'nodejs'
 
-const USERNAME_MIN_LENGTH = 3
-const USERNAME_MAX_LENGTH = 20
-const PASSWORD_MIN_LENGTH = 8
-const PASSWORD_MAX_LENGTH = 64
-const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).+$/
-
-function isValidUsername(name: string) {
-  if (name.length < USERNAME_MIN_LENGTH || name.length > USERNAME_MAX_LENGTH) {
-    return false
-  }
-  if (/\s/.test(name)) {
-    return false
-  }
-  if (/^\d+$/.test(name)) {
-    return false
-  }
-  return true
-}
-
-function isStrongPassword(password: string) {
-  if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
-    return false
-  }
-  return PASSWORD_REGEX.test(password)
-}
-
-async function generateUniquePlaceholderEmail() {
-  while (true) {
-    const candidate = `user-${Date.now()}-${randomBytes(4).toString('hex')}@local.supreset.pub`
-    const existing = await prisma.user.findUnique({
-      where: { email: candidate }
-    })
-    if (!existing) return candidate
-  }
-}
+const userSelect = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  avatar: true,
+  bio: true,
+  createdAt: true,
+  mustChangePassword: true
+} as const
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const name = String(body?.name || '').trim()
-    const password = String(body?.password || '')
-    const confirmPassword = String(body?.confirmPassword || '')
+    const parsed = registerSchema.safeParse(body)
 
-    if (!name || !password || !confirmPassword) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: '用户名、密码和确认密码都是必填项' },
+        { success: false, error: formatZodError(parsed.error) },
         { status: 400 }
       )
     }
 
-    if (!isValidUsername(name)) {
-      return NextResponse.json(
-        { success: false, error: '用户名需为 3-20 位，不能含空格，且不能为纯数字' },
-        { status: 400 }
-      )
-    }
-
-    if (password !== confirmPassword) {
-      return NextResponse.json(
-        { success: false, error: '两次输入的密码不一致' },
-        { status: 400 }
-      )
-    }
-
-    if (!isStrongPassword(password)) {
-      return NextResponse.json(
-        { success: false, error: '密码需为 8-64 位，且至少包含字母和数字' },
-        { status: 400 }
-      )
-    }
+    const { name, password } = parsed.data
 
     const existingUser = await prisma.user.findUnique({
       where: { name }
@@ -91,27 +45,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const placeholderEmail = await generateUniquePlaceholderEmail()
     const hashedPassword = await hashPassword(password)
 
     const user = await prisma.user.create({
       data: {
         name,
-        email: placeholderEmail,
         password: hashedPassword,
         role: 'user',
         mustChangePassword: false
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        avatar: true,
-        bio: true,
-        createdAt: true,
-        mustChangePassword: true
-      }
+      select: userSelect
     })
 
     const token = generateToken({
@@ -133,10 +76,15 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     )
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Registration error:', error)
 
-    if (error?.code === 'P2002') {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2002'
+    ) {
       return NextResponse.json(
         { success: false, error: '用户名已存在，请更换后重试' },
         { status: 400 }

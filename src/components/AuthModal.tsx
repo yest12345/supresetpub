@@ -10,14 +10,13 @@ interface AuthModalProps {
 }
 
 const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 20;
-const PASSWORD_MIN_LENGTH = 8;
-const PASSWORD_MAX_LENGTH = 64;
-const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).+$/;
+const USERNAME_MAX_LENGTH = 50;
+const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+const PASSWORD_MIN_LENGTH = 6;
 
 export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>(defaultMode);
-  const [identifier, setIdentifier] = useState('');
+  const [loginName, setLoginName] = useState('');
   const [password, setPassword] = useState('');
   const [registerName, setRegisterName] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
@@ -29,7 +28,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
   const { login, register } = useAuth();
 
   const resetForm = () => {
-    setIdentifier('');
+    setLoginName('');
     setPassword('');
     setRegisterName('');
     setRegisterPassword('');
@@ -84,7 +83,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
     setLoading(true);
 
     try {
-      await login(identifier.trim(), password);
+      await login(loginName.trim(), password);
       resetForm();
       onClose();
     } catch (err: unknown) {
@@ -101,32 +100,26 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
 
     const normalizedRegisterName = registerName.trim();
 
-    if (normalizedRegisterName.length < USERNAME_MIN_LENGTH || normalizedRegisterName.length > USERNAME_MAX_LENGTH) {
+    if (
+      normalizedRegisterName.length < USERNAME_MIN_LENGTH ||
+      normalizedRegisterName.length > USERNAME_MAX_LENGTH
+    ) {
       setError(`用户名需为 ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} 位`);
       return;
     }
 
-    if (/\s/.test(normalizedRegisterName)) {
-      setError('用户名不能包含空格');
+    if (!USERNAME_REGEX.test(normalizedRegisterName)) {
+      setError('用户名仅允许字母、数字和下划线');
       return;
     }
 
-    if (/^\d+$/.test(normalizedRegisterName)) {
-      setError('用户名不能是纯数字');
+    if (registerPassword.length < PASSWORD_MIN_LENGTH) {
+      setError(`密码至少 ${PASSWORD_MIN_LENGTH} 位`);
       return;
     }
 
     if (registerPassword !== confirmPassword) {
       setError('两次输入的密码不一致');
-      return;
-    }
-
-    if (
-      registerPassword.length < PASSWORD_MIN_LENGTH ||
-      registerPassword.length > PASSWORD_MAX_LENGTH ||
-      !PASSWORD_REGEX.test(registerPassword)
-    ) {
-      setError('密码需为 8-64 位，且至少包含字母和数字');
       return;
     }
 
@@ -202,21 +195,24 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
         {mode === 'login' ? (
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300">
-              使用邮箱、用户名或账号 ID + 密码登录
+              使用用户名 + 密码登录
             </div>
 
             <div>
-              <label htmlFor="identifier" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                邮箱 / 用户名 / 账号 ID
+              <label htmlFor="loginName" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                用户名
               </label>
               <input
-                id="identifier"
+                id="loginName"
                 type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
+                value={loginName}
+                onChange={(e) => setLoginName(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                placeholder="例如 you@example.com 或 beatmaker_01"
+                placeholder="例如 beatmaker_01"
                 required
+                minLength={USERNAME_MIN_LENGTH}
+                maxLength={USERNAME_MAX_LENGTH}
+                pattern="[a-zA-Z0-9_]+"
               />
             </div>
 
@@ -232,6 +228,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 placeholder="请输入密码"
                 required
+                minLength={PASSWORD_MIN_LENGTH}
               />
             </div>
 
@@ -252,7 +249,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
         ) : (
           <form onSubmit={handleRegisterSubmit} className="space-y-4">
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300">
-              自由注册账号：设置不重复用户名和安全密码，注册后自动登录
+              设置用户名和密码即可注册，注册后自动登录
             </div>
 
             <div>
@@ -265,10 +262,11 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 value={registerName}
                 onChange={(e) => setRegisterName(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                placeholder="3-20 位，不能含空格，不能纯数字"
+                placeholder="3-50 位，仅字母、数字、下划线"
                 required
                 minLength={USERNAME_MIN_LENGTH}
                 maxLength={USERNAME_MAX_LENGTH}
+                pattern="[a-zA-Z0-9_]+"
               />
             </div>
 
@@ -282,10 +280,9 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 value={registerPassword}
                 onChange={(e) => setRegisterPassword(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                placeholder="请输入密码"
+                placeholder="至少 6 位"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
-                maxLength={PASSWORD_MAX_LENGTH}
               />
             </div>
 
@@ -302,13 +299,8 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 placeholder="请再次输入密码"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
-                maxLength={PASSWORD_MAX_LENGTH}
               />
             </div>
-
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-              密码要求：8-64 位，至少包含 1 个字母和 1 个数字
-            </p>
 
             {error && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">

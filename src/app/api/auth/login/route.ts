@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateToken, hashPassword, verifyPassword } from '@/lib/auth'
+import { formatZodError, loginSchema } from '@/lib/validations/auth'
 import { randomBytes } from 'crypto'
 
 export const runtime = 'nodejs'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD || 'supreset2024'
+const LOGIN_ERROR = '用户名或密码错误'
 
 function sanitizeName(base: string) {
   const cleaned = base.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase()
@@ -105,34 +107,12 @@ async function handleEmailCodeLogin(email: string, code: string) {
   })
 }
 
-async function handlePasswordLogin(identifier: string, password: string) {
-  const normalizedIdentifier = identifier.trim()
-
-  if (!normalizedIdentifier || !password) {
-    return NextResponse.json(
-      { success: false, error: '账号和密码都是必填项' },
-      { status: 400 }
-    )
-  }
-
-  const isEmail = EMAIL_REGEX.test(normalizedIdentifier)
-  const isNumeric = /^\d+$/.test(normalizedIdentifier)
-
-  let user = null
-  if (isEmail) {
-    user = await prisma.user.findUnique({ where: { email: normalizedIdentifier } })
-  } else if (isNumeric) {
-    user = await prisma.user.findUnique({ where: { id: parseInt(normalizedIdentifier, 10) } })
-    if (!user) {
-      user = await prisma.user.findUnique({ where: { name: normalizedIdentifier } })
-    }
-  } else {
-    user = await prisma.user.findUnique({ where: { name: normalizedIdentifier } })
-  }
+async function handlePasswordLogin(name: string, password: string) {
+  const user = await prisma.user.findUnique({ where: { name } })
 
   if (!user) {
     return NextResponse.json(
-      { success: false, error: '账号不存在或密码错误' },
+      { success: false, error: LOGIN_ERROR },
       { status: 401 }
     )
   }
@@ -140,7 +120,7 @@ async function handlePasswordLogin(identifier: string, password: string) {
   const isPasswordValid = await verifyPassword(password, user.password)
   if (!isPasswordValid) {
     return NextResponse.json(
-      { success: false, error: '账号不存在或密码错误' },
+      { success: false, error: LOGIN_ERROR },
       { status: 401 }
     )
   }
@@ -173,24 +153,32 @@ async function handlePasswordLogin(identifier: string, password: string) {
 
 /**
  * POST /api/auth/login
- * 支持：
- * - 邮箱 + 验证码登录/注册
- * - 账号ID/邮箱/用户名 + 密码登录
+ * 主流程：用户名 + 密码登录
+ * 兼容：邮箱 + 验证码登录（遗留接口，前端不再使用）
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, code, identifier, password } = body
+    const { email, code, name, password } = body
 
     if (email && code) {
       return await handleEmailCodeLogin(String(email), String(code))
     }
 
-    return await handlePasswordLogin(String(identifier || ''), String(password || ''))
-  } catch (error: any) {
+    const parsed = loginSchema.safeParse({ name, password })
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: formatZodError(parsed.error) },
+        { status: 400 }
+      )
+    }
+
+    return await handlePasswordLogin(parsed.data.name, parsed.data.password)
+  } catch (error: unknown) {
     console.error('Login error:', error)
+    const message = error instanceof Error ? error.message : '未知错误'
     return NextResponse.json(
-      { success: false, error: '登录失败: ' + error.message },
+      { success: false, error: '登录失败: ' + message },
       { status: 500 }
     )
   }

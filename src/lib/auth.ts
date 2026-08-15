@@ -8,7 +8,7 @@ const JWT_EXPIRES_IN = '7d' // Token 有效期 7 天
 // 用户数据接口
 export interface UserPayload {
   id: number
-  email: string
+  email: string | null
   name: string
   role: string
 }
