@@ -194,7 +194,7 @@ export default function PresetDetailPage() {
             preset.files.forEach((file, index) => {
               setTimeout(() => {
                 const link = document.createElement('a');
-                link.href = file.filePath;
+                link.href = "/api/files" + file.filePath;
                 link.download = file.originalName;
                 document.body.appendChild(link);
                 link.click();
@@ -208,7 +208,7 @@ export default function PresetDetailPage() {
           
           try {
             const link = document.createElement('a');
-            link.href = preset.filePath;
+            link.href = "/api/files" + preset.filePath;
             link.download = preset.title + preset.format;
             link.target = '_blank'; // 在新标签页打开，避免被拦截
             document.body.appendChild(link);
