@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateToken, hashPassword, verifyPassword } from '@/lib/auth'
-import { formatZodError, loginSchema } from '@/lib/validations/auth'
 import { randomBytes } from 'crypto'
 
 export const runtime = 'nodejs'
@@ -22,7 +21,7 @@ async function generateUniqueName(email: string) {
   let counter = 0
 
   while (true) {
-    const existing = await prisma.user.findUnique({ where: { name } })
+    const existing = await prisma.user.findFirst({ where: { name } })
     if (!existing) return name
     counter += 1
     const suffix = `-${counter}`
@@ -107,8 +106,22 @@ async function handleEmailCodeLogin(email: string, code: string) {
   })
 }
 
-async function handlePasswordLogin(name: string, password: string) {
-  const user = await prisma.user.findUnique({ where: { name } })
+async function handlePasswordLogin(identifier: string, password: string) {
+  const normalizedIdentifier = identifier.trim()
+  const isEmail = EMAIL_REGEX.test(normalizedIdentifier)
+  const isNumeric = /^\d+$/.test(normalizedIdentifier)
+
+  let user = null
+  if (isEmail) {
+    user = await prisma.user.findUnique({ where: { email: normalizedIdentifier } })
+  } else if (isNumeric) {
+    user = await prisma.user.findUnique({ where: { id: parseInt(normalizedIdentifier, 10) } })
+    if (!user) {
+      user = await prisma.user.findFirst({ where: { name: normalizedIdentifier } })
+    }
+  } else {
+    user = await prisma.user.findFirst({ where: { name: normalizedIdentifier } })
+  }
 
   if (!user) {
     return NextResponse.json(
@@ -159,21 +172,23 @@ async function handlePasswordLogin(name: string, password: string) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, code, name, password } = body
+    const { email, code, name, identifier, password } = body
 
     if (email && code) {
       return await handleEmailCodeLogin(String(email), String(code))
     }
 
-    const parsed = loginSchema.safeParse({ name, password })
-    if (!parsed.success) {
+    const account = String(name || identifier || '').trim()
+    const pwd = String(password || '')
+
+    if (!account || !pwd) {
       return NextResponse.json(
-        { success: false, error: formatZodError(parsed.error) },
+        { success: false, error: '用户名和密码不能为空' },
         { status: 400 }
       )
     }
 
-    return await handlePasswordLogin(parsed.data.name, parsed.data.password)
+    return await handlePasswordLogin(account, pwd)
   } catch (error: unknown) {
     console.error('Login error:', error)
     const message = error instanceof Error ? error.message : '未知错误'
