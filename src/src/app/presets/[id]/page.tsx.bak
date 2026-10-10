@@ -94,7 +94,7 @@ export default function PresetDetailPage() {
   };
 
   const checkUserInteractions = async () => {
-    const userId = user?.id;
+    const userId = 2025100900; // TODO: Get from auth context
     try {
       // 检查点赞状态
       const likesResponse = await fetch(`/api/likes?userId=${userId}&presetId=${params.id}`);
@@ -243,7 +243,7 @@ export default function PresetDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           presetId: preset.id,
-          userId: user?.id
+          userId: 2025100900 // TODO: Get from auth context - 临时使用测试用户
         }),
       });
       
@@ -283,7 +283,7 @@ export default function PresetDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           presetId: preset.id,
-          userId: user?.id
+          userId: 2025100900 // TODO: Get from auth context - 临时使用测试用户
         }),
       });
       
