@@ -190,11 +190,12 @@ export default function PresetDetailPage() {
             console.error('打包下载失败，尝试逐个下载:', zipError);
             alert('打包下载失败，将逐个下载文件');
             
-            // 降级方案：逐个下载
+            // 降级方案：逐个通过API下载（确保触发浏览器下载）
             preset.files.forEach((file, index) => {
               setTimeout(() => {
+                const apiPath = file.filePath.replace(/^\//, '');
                 const link = document.createElement('a');
-                link.href = file.filePath;
+                link.href = `/api/files/${apiPath}`;
                 link.download = file.originalName;
                 document.body.appendChild(link);
                 link.click();
@@ -203,17 +204,30 @@ export default function PresetDetailPage() {
             });
           }
         } else {
-          // 单个文件下载
+          // 单个文件下载（通过API确保正确触发下载）
           console.log('📥 开始下载单个文件:', preset.filePath);
-          
           try {
+            // 去掉开头的斜杠，构建API路径
+            const apiPath = preset.filePath.replace(/^\//, '');
+            const downloadUrl = `/api/files/${apiPath}`;
+            console.log('📥 下载URL:', downloadUrl);
+            
+            // 使用fetch获取文件blob，确保触发浏览器下载
+            const response = await fetch(downloadUrl);
+            if (!response.ok) {
+              throw new Error(`文件下载失败 (${response.status})`);
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = preset.filePath;
-            link.download = preset.title + preset.format;
-            link.target = '_blank'; // 在新标签页打开，避免被拦截
+            link.href = url;
+            // 使用原始文件名作为下载文件名
+            const fileName = preset.filePath.split('/').pop() || (preset.title + preset.format);
+            link.download = fileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
             console.log('✅ 单文件下载已开始');
           } catch (downloadError) {
             console.error('下载失败:', downloadError);
