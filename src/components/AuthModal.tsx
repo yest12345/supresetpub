@@ -143,7 +143,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
       onClick={handleBackdropClick}
     >
       <div
-        className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800"
+        className="relative w-full max-w-md rounded-card border border-hairline bg-white p-6 shadow-card"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -161,7 +161,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
 
         <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">账号访问</h2>
 
-        <div className="mb-6 flex rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900">
+        <div className="mb-6 flex rounded-lg border border-hairline bg-surface-soft p-1">
           <button
             type="button"
             onClick={() => {
@@ -170,8 +170,8 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
             }}
             className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               mode === 'login'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700'
+                ? 'bg-brand text-white'
+                : 'text-body hover:bg-white'
             }`}
           >
             登录
@@ -184,8 +184,8 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
             }}
             className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               mode === 'register'
-                ? 'bg-emerald-600 text-white'
-                : 'text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700'
+                ? 'bg-brand text-white'
+                : 'text-body hover:bg-white'
             }`}
           >
             注册
@@ -194,7 +194,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
 
         {mode === 'login' ? (
           <form onSubmit={handleLoginSubmit} className="space-y-4">
-            <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300">
+            <div className="rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-xs text-body">
               使用用户名 + 密码登录
             </div>
 
@@ -207,7 +207,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 type="text"
                 value={loginName}
                 onChange={(e) => setLoginName(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-hairline px-4 py-2 text-ink outline-none focus:border-[#222222]"
                 placeholder="例如 beatmaker_01"
                 required
                 minLength={USERNAME_MIN_LENGTH}
@@ -225,7 +225,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-hairline px-4 py-2 text-ink outline-none focus:border-[#222222]"
                 placeholder="请输入密码"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
@@ -241,14 +241,14 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
+              className="w-full rounded-lg bg-brand px-4 py-3 font-medium text-white transition-colors hover:bg-[#e00b41] disabled:opacity-60"
             >
               {loading ? '登录中...' : '登录'}
             </button>
           </form>
         ) : (
           <form onSubmit={handleRegisterSubmit} className="space-y-4">
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <div className="rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-xs text-body">
               设置用户名和密码即可注册，注册后自动登录
             </div>
 
@@ -261,7 +261,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 type="text"
                 value={registerName}
                 onChange={(e) => setRegisterName(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-hairline px-4 py-2 text-ink outline-none focus:border-[#222222]"
                 placeholder="3-50 位，仅字母、数字、下划线"
                 required
                 minLength={USERNAME_MIN_LENGTH}
@@ -279,7 +279,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 type="password"
                 value={registerPassword}
                 onChange={(e) => setRegisterPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-hairline px-4 py-2 text-ink outline-none focus:border-[#222222]"
                 placeholder="至少 6 位"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
@@ -295,7 +295,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-hairline px-4 py-2 text-ink outline-none focus:border-[#222222]"
                 placeholder="请再次输入密码"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
@@ -311,7 +311,7 @@ export default function AuthModal({ isOpen, onClose, defaultMode = 'login' }: Au
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-emerald-400"
+              className="w-full rounded-lg bg-brand px-4 py-3 font-medium text-white transition-colors hover:bg-[#e00b41] disabled:opacity-60"
             >
               {loading ? '注册中...' : '立即注册'}
             </button>

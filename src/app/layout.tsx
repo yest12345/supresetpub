@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PasswordChangeGuard from "@/components/PasswordChangeGuard";
 import Sidebar from "@/components/Sidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-app",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Supreset - 混音预设分享平台",
@@ -17,11 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <body className="antialiased">
+      <body className={`${inter.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <AuthProvider>

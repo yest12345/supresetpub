@@ -361,9 +361,9 @@ export default function PresetDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-8">
+      <main className="min-h-screen bg-white pt-8">
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff385c]"></div>
         </div>
       </main>
     );
@@ -371,15 +371,15 @@ export default function PresetDetailPage() {
 
   if (!preset) {
     return (
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-8">
+      <main className="min-h-screen bg-white pt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-20">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-2xl font-bold text-ink mb-4">
               预设未找到
             </h2>
             <button
               onClick={() => router.push('/presets')}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+              className="px-6 py-2 bg-brand hover:bg-[#e00b41] text-white rounded-lg transition-colors"
             >
               返回预设列表
             </button>
@@ -390,14 +390,14 @@ export default function PresetDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-8">
+    <main className="min-h-screen bg-white pt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
               {/* Cover Image */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
-                <div className="relative h-96 bg-gradient-to-br from-purple-500 to-pink-500">
+              <div className="rounded-card border border-hairline bg-white shadow-card overflow-hidden mb-6">
+                <div className="relative h-96 bg-surface-soft">
                   {preset.coverImage && !imageError ? (
                     <img
                       src={preset.coverImage}
@@ -407,12 +407,12 @@ export default function PresetDetailPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-white text-8xl font-bold opacity-50">
+                      <div className="text-muted-custom text-8xl font-semibold opacity-70">
                         {preset.daw.charAt(0)}
                       </div>
                     </div>
                   )}
-                  <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-lg text-sm font-medium">
+                  <div className="absolute top-4 right-4 rounded-pill bg-white px-3 py-1 text-sm font-semibold text-ink shadow-card">
                     {preset.daw}
                   </div>
                 </div>
@@ -420,12 +420,12 @@ export default function PresetDetailPage() {
 
               {/* Audio Preview */}
               {preset.previewAudio && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                <div className="rounded-card border border-hairline bg-white shadow-card p-6 mb-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-[#ff385c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 className="text-lg font-semibold text-ink">
                       预设试听
                     </h3>
                   </div>
@@ -443,8 +443,8 @@ export default function PresetDetailPage() {
               )}
 
               {/* Title and Description */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <div className="rounded-card border border-hairline bg-white shadow-card p-6 mb-6">
+                <h1 className="text-3xl font-bold text-ink mb-4">
                   {preset.title}
                 </h1>
                 
@@ -453,7 +453,7 @@ export default function PresetDetailPage() {
                   {preset.tags.map((tagItem) => (
                     <span
                       key={tagItem.tag.id}
-                      className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full text-sm font-medium"
+                      className="rounded-pill border border-hairline px-3 py-1 text-sm font-medium text-body"
                     >
                       {tagItem.tag.name}
                     </span>
@@ -461,7 +461,7 @@ export default function PresetDetailPage() {
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center gap-6 mb-6 text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-6 mb-6 text-muted-custom">
                   <span className="flex items-center gap-2">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -489,28 +489,28 @@ export default function PresetDetailPage() {
                 </div>
 
                 {preset.description && (
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <p className="text-body leading-relaxed">
                     {preset.description}
                   </p>
                 )}
               </div>
 
               {/* Comments */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              <div className="rounded-card border border-hairline bg-white shadow-card p-6">
+                <h2 className="text-xl font-bold text-ink mb-4">
                   评论 ({preset._count.comments})
                 </h2>
                 
                 {preset.comments.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                  <p className="text-muted-custom text-center py-8">
                     暂无评论
                   </p>
                 ) : (
                   <div className="space-y-4">
                     {preset.comments.map((comment) => (
-                      <div key={comment.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
+                      <div key={comment.id} className="border-b border-hairline pb-4 last:border-0">
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
+                          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-strong text-sm font-semibold text-ink">
                             {comment.user.avatar ? (
                               <img src={comment.user.avatar} alt={comment.user.name} className="w-full h-full object-cover" />
                             ) : (
@@ -519,14 +519,14 @@ export default function PresetDetailPage() {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-gray-900 dark:text-white">
+                              <span className="font-medium text-ink">
                                 {comment.user.name}
                               </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                              <span className="text-xs text-muted-custom">
                                 {new Date(comment.createdAt).toLocaleDateString('zh-CN')}
                               </span>
                             </div>
-                            <p className="text-gray-700 dark:text-gray-300">
+                            <p className="text-body">
                               {comment.content}
                             </p>
                           </div>
@@ -541,16 +541,16 @@ export default function PresetDetailPage() {
             {/* Sidebar */}
             <div className="lg:col-span-1">
               {/* Download Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 sticky top-20">
+              <div className="rounded-card border border-hairline bg-white shadow-card p-6 mb-6 sticky top-20">
                 <div className="mb-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">文件格式</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{preset.format}</p>
+                  <p className="text-sm text-muted-custom mb-1">文件格式</p>
+                  <p className="text-lg font-semibold text-ink">{preset.format}</p>
                 </div>
                 
                 {preset.files && preset.files.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">预设包</p>
-                    <p className="text-lg font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-2">
+                    <p className="text-sm text-muted-custom mb-1">预设包</p>
+                    <p className="flex items-center gap-2 text-lg font-semibold text-ink">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                       </svg>
@@ -560,10 +560,10 @@ export default function PresetDetailPage() {
                 )}
                 
                 <div className="mb-6">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <p className="text-sm text-muted-custom mb-1">
                     {preset.files && preset.files.length > 0 ? '总大小' : '文件大小'}
                   </p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <p className="text-lg font-semibold text-ink">
                     {formatFileSize(preset.fileSize)}
                   </p>
                 </div>
@@ -572,8 +572,8 @@ export default function PresetDetailPage() {
                   onClick={handleDownload}
                   className={`w-full font-semibold py-3 px-4 rounded-lg transition-colors mb-3 flex items-center justify-center gap-2 ${
                     user
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                      : 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed'
+                      ? 'bg-brand hover:bg-[#e00b41] text-white'
+                      : 'cursor-not-allowed bg-surface-strong text-muted-custom'
                   }`}
                   title={!user ? '请先登录后再下载' : ''}
                 >
@@ -589,8 +589,8 @@ export default function PresetDetailPage() {
                     disabled={liking}
                     className={`flex-1 border ${
                       isLiked 
-                        ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' 
-                        : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        ? 'border-red-500 bg-red-50 text-red-600' 
+                        : 'border-hairline text-body hover:bg-surface-soft'
                     } font-semibold py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2 ${liking ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <svg 
@@ -608,8 +608,8 @@ export default function PresetDetailPage() {
                     disabled={favoriting}
                     className={`flex-1 border ${
                       isFavorited 
-                        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400' 
-                        : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        ? 'border-yellow-500 bg-yellow-50 text-yellow-700' 
+                        : 'border-hairline text-body hover:bg-surface-soft'
                     } font-semibold py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2 ${favoriting ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <svg 
@@ -629,7 +629,7 @@ export default function PresetDetailPage() {
                   <div className="mt-2 space-y-2">
                     <button
                       onClick={() => router.push(`/presets/${preset.id}/edit`)}
-                      className="w-full border border-purple-300 dark:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-semibold py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
+                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-hairline py-2 px-4 font-medium text-ink transition-all hover:bg-surface-soft"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -639,7 +639,7 @@ export default function PresetDetailPage() {
                     <button
                       onClick={handleDelete}
                       disabled={deleting}
-                      className={`w-full border border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2 ${deleting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 py-2 px-4 font-medium text-[#c13515] transition-all hover:bg-red-50 ${deleting ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <svg className={`w-5 h-5 ${deleting ? 'animate-pulse' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -651,10 +651,10 @@ export default function PresetDetailPage() {
               </div>
 
               {/* Creator Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">创作者</h3>
+              <div className="rounded-card border border-hairline bg-white shadow-card p-6">
+                <h3 className="text-lg font-bold text-ink mb-4">创作者</h3>
                 <div className="flex items-start gap-3">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0">
+                  <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-strong text-xl font-semibold text-ink">
                     {preset.user.avatar ? (
                       <img src={preset.user.avatar} alt={preset.user.name} className="w-full h-full object-cover" />
                     ) : (
@@ -662,11 +662,11 @@ export default function PresetDetailPage() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    <h4 className="font-semibold text-ink mb-1">
                       {preset.user.name}
                     </h4>
                     {preset.user.bio && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-muted-custom">
                         {preset.user.bio}
                       </p>
                     )}

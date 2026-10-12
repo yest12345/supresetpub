@@ -13,6 +13,8 @@
     "prisma:studio": "dotenv -e .env -- prisma studio",
     "prisma:push": "dotenv -e .env -- prisma db push",
     "prisma:seed": "dotenv -e .env -- tsx prisma/seed.ts",
+    "seed:local-test": "dotenv -e .env -- tsx scripts/seed-local-test.ts",
+    "db:local": "bash scripts/start-local-mysql.sh",
     "generate:beta": "dotenv -e .env -- tsx scripts/generate-beta-accounts.ts"
   },
   "dependencies": {

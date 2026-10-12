@@ -56,7 +56,7 @@ export default function Sidebar() {
     {
       href: user?.id ? `/users/${user.id}` : '#',
       icon: user ? (
-        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden">
+        <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-surface-strong text-xs font-semibold text-ink">
           {user.avatar ? (
             <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
           ) : (
@@ -76,7 +76,7 @@ export default function Sidebar() {
   return (
     <>
       <aside
-        className={`fixed left-0 top-0 h-full bg-white dark:bg-black border-r border-gray-300 dark:border-gray-800 transition-all duration-300 z-50 flex-shrink-0 ${
+        className={`fixed left-0 top-0 z-50 h-full flex-shrink-0 border-r border-hairline bg-white transition-all duration-300 ${
           isHovered ? 'w-64' : 'w-20'
         }`}
         onMouseEnter={() => setIsHovered(true)}
@@ -87,7 +87,7 @@ export default function Sidebar() {
           <div className="px-4 mb-8">
             <Link
               href="/"
-              className="flex items-center gap-3 text-gray-900 dark:text-white hover:opacity-70 transition-opacity"
+              className="flex items-center gap-3 text-ink transition-opacity hover:opacity-70"
             >
               <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
                 <img 
@@ -130,17 +130,13 @@ export default function Sidebar() {
                         e.stopPropagation();
                         setIsAuthModalOpen(true);
                       }}
-                      className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors group w-full text-left ${
-                        active
-                          ? 'bg-gray-100 dark:bg-gray-900'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-900'
+                      className={`group flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors ${
+                        active ? 'bg-surface-soft' : 'hover:bg-surface-soft'
                       }`}
                     >
                       <div
                         className={`flex-shrink-0 ${
-                          active
-                            ? 'text-gray-900 dark:text-white'
-                            : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
+                          active ? 'text-ink' : 'text-muted-custom group-hover:text-ink'
                         }`}
                       >
                         {item.icon}
@@ -151,9 +147,7 @@ export default function Sidebar() {
                             ? 'opacity-100 translate-x-0'
                             : 'opacity-0 -translate-x-4 w-0 overflow-hidden'
                         } ${
-                          active
-                            ? 'text-gray-900 dark:text-white'
-                            : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
+                          active ? 'text-ink' : 'text-muted-custom group-hover:text-ink'
                         }`}
                       >
                         {item.label}
@@ -166,17 +160,13 @@ export default function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors group ${
-                      active
-                        ? 'bg-gray-100 dark:bg-gray-900'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-900'
+                    className={`group flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
+                      active ? 'bg-surface-soft' : 'hover:bg-surface-soft'
                     }`}
                   >
                     <div
                       className={`flex-shrink-0 ${
-                        active
-                          ? 'text-gray-900 dark:text-white'
-                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
+                        active ? 'text-ink' : 'text-muted-custom group-hover:text-ink'
                       }`}
                     >
                       {item.icon}
@@ -187,9 +177,7 @@ export default function Sidebar() {
                           ? 'opacity-100 translate-x-0'
                           : 'opacity-0 -translate-x-4 w-0 overflow-hidden'
                       } ${
-                        active
-                          ? 'text-gray-900 dark:text-white'
-                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
+                        active ? 'text-ink' : 'text-muted-custom group-hover:text-ink'
                       }`}
                     >
                       {item.label}
@@ -200,19 +188,19 @@ export default function Sidebar() {
           </nav>
 
           {/* 底部操作 */}
-          <div className="px-3 space-y-1 border-t border-gray-300 dark:border-gray-800 pt-4">
+          <div className="space-y-1 border-t border-hairline px-3 pt-4">
             {loading ? (
               <div className="flex items-center gap-3 px-3 py-3">
-                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                <div className="h-6 w-6 animate-pulse rounded-full bg-surface-strong"></div>
                 {isHovered && (
-                  <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
+                  <div className="h-4 w-20 animate-pulse rounded bg-surface-strong"></div>
                 )}
               </div>
             ) : user ? (
               <>
                 <button
                   onClick={logout}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors w-full text-left hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-muted-custom transition-colors hover:bg-surface-soft hover:text-ink"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -231,7 +219,7 @@ export default function Sidebar() {
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors w-full text-left hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-muted-custom transition-colors hover:bg-surface-soft hover:text-ink"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />

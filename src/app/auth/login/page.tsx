@@ -86,20 +86,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 px-4 py-10 sm:py-16">
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl sm:p-8">
+    <div className="min-h-screen bg-white px-4 py-10 sm:py-16">
+      <div className="mx-auto w-full max-w-md rounded-card border border-hairline bg-white p-6 shadow-card sm:p-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-neutral-900">
+            <h1 className="text-[28px] font-bold leading-[1.43] text-ink">
               {mode === "login" ? "欢迎回来" : "创建新账号"}
             </h1>
-            <p className="mt-2 text-sm text-neutral-500">
+            <p className="mt-2 text-sm text-muted-custom">
               {mode === "login"
                 ? "使用用户名 + 密码登录"
                 : "设置用户名和密码即可注册"}
             </p>
           </div>
-          <div className="rounded-full bg-neutral-100 p-1 text-xs font-medium text-neutral-600">
+          <div className="rounded-pill bg-surface-soft p-1 text-xs font-medium text-body">
             <button
               type="button"
               onClick={() => {
@@ -108,8 +108,8 @@ export default function LoginPage() {
               }}
               className={`rounded-full px-3 py-1 transition ${
                 mode === "login"
-                  ? "bg-neutral-900 text-white"
-                  : "hover:bg-neutral-200"
+                  ? "bg-brand text-white"
+                  : "hover:bg-white"
               }`}
             >
               登录
@@ -122,8 +122,8 @@ export default function LoginPage() {
               }}
               className={`rounded-full px-3 py-1 transition ${
                 mode === "register"
-                  ? "bg-neutral-900 text-white"
-                  : "hover:bg-neutral-200"
+                  ? "bg-brand text-white"
+                  : "hover:bg-white"
               }`}
             >
               注册
@@ -134,7 +134,7 @@ export default function LoginPage() {
         {mode === "login" ? (
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
             <div className="space-y-2">
-              <label htmlFor="loginName" className="text-sm font-medium text-neutral-700">
+              <label htmlFor="loginName" className="text-sm font-medium text-body">
                 用户名
               </label>
               <input
@@ -143,7 +143,7 @@ export default function LoginPage() {
                 value={loginName}
                 onChange={(e) => setLoginName(e.target.value)}
                 placeholder="例如 beatmaker_01"
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                className="w-full rounded-lg border border-hairline px-3 py-2.5 text-sm text-ink outline-none focus:border-[#222222]"
                 required
                 minLength={USERNAME_MIN_LENGTH}
                 maxLength={USERNAME_MAX_LENGTH}
@@ -152,7 +152,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-neutral-700">
+              <label htmlFor="password" className="text-sm font-medium text-body">
                 密码
               </label>
               <input
@@ -161,7 +161,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="请输入密码"
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                className="w-full rounded-lg border border-hairline px-3 py-2.5 text-sm text-ink outline-none focus:border-[#222222]"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
               />
@@ -176,7 +176,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-neutral-900 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full rounded-lg bg-brand py-2.5 text-sm font-medium text-white hover:bg-[#e00b41] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? "登录中..." : "登录"}
             </button>
@@ -184,7 +184,7 @@ export default function LoginPage() {
         ) : (
           <form onSubmit={handleRegister} className="mt-6 space-y-4">
             <div className="space-y-2">
-              <label htmlFor="registerName" className="text-sm font-medium text-neutral-700">
+              <label htmlFor="registerName" className="text-sm font-medium text-body">
                 用户名
               </label>
               <input
@@ -193,7 +193,7 @@ export default function LoginPage() {
                 value={registerName}
                 onChange={(e) => setRegisterName(e.target.value)}
                 placeholder="3-50 位，仅字母、数字、下划线"
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                className="w-full rounded-lg border border-hairline px-3 py-2.5 text-sm text-ink outline-none focus:border-[#222222]"
                 required
                 minLength={USERNAME_MIN_LENGTH}
                 maxLength={USERNAME_MAX_LENGTH}
@@ -202,7 +202,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="registerPassword" className="text-sm font-medium text-neutral-700">
+              <label htmlFor="registerPassword" className="text-sm font-medium text-body">
                 密码
               </label>
               <input
@@ -211,14 +211,14 @@ export default function LoginPage() {
                 value={registerPassword}
                 onChange={(e) => setRegisterPassword(e.target.value)}
                 placeholder="至少 6 位"
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                className="w-full rounded-lg border border-hairline px-3 py-2.5 text-sm text-ink outline-none focus:border-[#222222]"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-body">
                 确认密码
               </label>
               <input
@@ -227,7 +227,7 @@ export default function LoginPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="请再次输入密码"
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                className="w-full rounded-lg border border-hairline px-3 py-2.5 text-sm text-ink outline-none focus:border-[#222222]"
                 required
                 minLength={PASSWORD_MIN_LENGTH}
               />
@@ -242,7 +242,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-neutral-900 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full rounded-lg bg-brand py-2.5 text-sm font-medium text-white hover:bg-[#e00b41] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? "注册中..." : "立即注册"}
             </button>

@@ -1,7 +1,8 @@
 ﻿"use client";
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import PresetCard from '../../components/PresetCard';
 import UploadModal from '../../components/UploadModal';
 
@@ -42,7 +43,8 @@ interface Tag {
   };
 }
 
-export default function PresetsPage() {
+function PresetsPageContent() {
+  const searchParams = useSearchParams();
   const [presets, setPresets] = useState<Preset[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,6 +65,14 @@ export default function PresetsPage() {
   useEffect(() => {
     fetchTags();
   }, []);
+
+  useEffect(() => {
+    const initialSearch = searchParams.get('search') || '';
+    const initialDaw = searchParams.get('daw') || '';
+    setSearchQuery(initialSearch);
+    setSelectedDAW(initialDaw);
+    setPage(1);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchPresets();
@@ -123,29 +133,29 @@ export default function PresetsPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-8">
+      <main className="min-h-screen bg-white pt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
-          <div className="mb-8 flex items-start justify-between">
+          <div className="mb-8 flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-[28px] font-bold leading-[1.43] text-ink">
                   预设广场
                 </h1>
                 <Link
                   href="/disclaimer"
-                  className="text-sm px-3 py-1.5 rounded-full border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="text-sm px-3 py-1.5 rounded-pill border border-hairline text-body hover:bg-surface-soft transition-colors"
                 >
                   免责声明
                 </Link>
               </div>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-custom">
                 探索和下载专业的音乐制作预设
               </p>
             </div>
             <button
               onClick={() => setIsUploadModalOpen(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
+              className="bg-brand hover:bg-[#e00b41] text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -156,17 +166,17 @@ export default function PresetsPage() {
 
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="mb-6">
-            <div className="flex gap-2">
+            <div className="flex h-14 items-center rounded-pill border border-hairline bg-white shadow-card">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索预设..."
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                placeholder="搜索预设名称、风格或 DAW"
+                className="flex-1 bg-transparent px-6 text-base text-ink outline-none placeholder:text-muted-custom"
               />
               <button
                 type="submit"
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                className="mr-2 flex h-10 items-center rounded-full bg-brand px-5 text-sm font-medium text-white transition-colors hover:bg-[#e00b41]"
               >
                 搜索
               </button>
@@ -174,12 +184,12 @@ export default function PresetsPage() {
           </form>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+          <div className="rounded-card border border-hairline bg-white p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">筛选条件</h3>
+              <h3 className="text-base font-semibold text-ink">筛选条件</h3>
               <button
                 onClick={resetFilters}
-                className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400"
+                className="text-sm font-medium text-ink underline-offset-4 hover:underline"
               >
                 重置筛选
               </button>
@@ -188,7 +198,7 @@ export default function PresetsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* DAW Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-body mb-2">
                   DAW
                 </label>
                 <select
@@ -197,7 +207,7 @@ export default function PresetsPage() {
                     setSelectedDAW(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-ink outline-none focus:border-[#222222]"
                 >
                   <option value="">全部 DAW</option>
                   {daws.map((daw) => (
@@ -210,7 +220,7 @@ export default function PresetsPage() {
 
               {/* Tag Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-body mb-2">
                   音乐风格
                 </label>
                 <select
@@ -219,7 +229,7 @@ export default function PresetsPage() {
                     setSelectedTag(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-ink outline-none focus:border-[#222222]"
                 >
                   <option value="">全部风格</option>
                   {tags.map((tag) => (
@@ -232,7 +242,7 @@ export default function PresetsPage() {
 
               {/* Sort Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-body mb-2">
                   排序方式
                 </label>
                 <select
@@ -241,7 +251,7 @@ export default function PresetsPage() {
                     setSortBy(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-ink outline-none focus:border-[#222222]"
                 >
                   <option value="latest">最新发布</option>
                   <option value="popular">最多下载</option>
@@ -254,7 +264,7 @@ export default function PresetsPage() {
           {/* Presets Grid */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff385c]"></div>
             </div>
           ) : presets.length === 0 ? (
             <div className="text-center py-20">
@@ -280,7 +290,7 @@ export default function PresetsPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {presets.map((preset) => (
                   <PresetCard key={preset.id} preset={preset} />
                 ))}
@@ -292,7 +302,7 @@ export default function PresetsPage() {
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white"
+                    className="px-4 py-2 border border-hairline rounded-lg hover:bg-surface-soft disabled:opacity-50 disabled:cursor-not-allowed text-ink"
                   >
                     上一页
                   </button>
@@ -316,8 +326,8 @@ export default function PresetsPage() {
                           onClick={() => setPage(pageNum)}
                           className={`px-3 py-2 rounded-lg ${
                             page === pageNum
-                              ? 'bg-purple-600 text-white'
-                              : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-900 dark:text-white'
+                              ? 'bg-brand text-white'
+                              : 'border border-hairline hover:bg-surface-soft text-ink'
                           }`}
                         >
                           {pageNum}
@@ -329,7 +339,7 @@ export default function PresetsPage() {
                   <button
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white"
+                    className="px-4 py-2 border border-hairline rounded-lg hover:bg-surface-soft disabled:opacity-50 disabled:cursor-not-allowed text-ink"
                   >
                     下一页
                   </button>
@@ -349,5 +359,21 @@ export default function PresetsPage() {
         }}
       />
     </>
+  );
+}
+
+export default function PresetsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white pt-8">
+          <div className="mx-auto max-w-7xl px-4 py-20 text-center text-muted-custom">
+            加载中...
+          </div>
+        </main>
+      }
+    >
+      <PresetsPageContent />
+    </Suspense>
   );
 }

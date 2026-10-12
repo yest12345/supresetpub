@@ -1,0 +1,12 @@
+[mysqld]
+basedir=/usr/local/mysql
+datadir=/Users/shati/tmp/supreset-mysql-data
+port=3307
+socket=/tmp/supresetpub-mysql.sock
+pid-file=/tmp/supresetpub-mysql.pid
+bind-address=127.0.0.1
+mysqlx=0
+
+[client]
+socket=/tmp/supresetpub-mysql.sock
+port=3307

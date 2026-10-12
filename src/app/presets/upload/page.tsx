@@ -378,13 +378,13 @@ export default function UploadPresetPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-8">
+    <main className="min-h-screen bg-white pt-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
             <button
               onClick={() => router.push('/presets')}
-              className="mb-4 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="mb-4 flex items-center gap-2 text-muted-custom transition-colors hover:text-ink"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -392,23 +392,23 @@ export default function UploadPresetPage() {
               返回预设列表
             </button>
             
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="mb-2 text-[28px] font-bold leading-[1.43] text-ink">
               上传预设
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-custom">
               分享您的音乐制作预设给社区
             </p>
           </div>
 
           {/* Upload Form */}
-          <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <form onSubmit={handleSubmit} className="rounded-card border border-hairline bg-white p-6 shadow-card">
             {/* 基本信息 */}
             <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">基本信息</h2>
+              <h2 className="mb-4 text-xl font-semibold text-ink">基本信息</h2>
               
               {/* 标题 */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-body">
                   预设标题 <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -417,13 +417,13 @@ export default function UploadPresetPage() {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="例如：Trap 808 混音预设"
                   required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full rounded-lg border border-hairline bg-white px-4 py-2.5 text-ink outline-none focus:border-[#222222]"
                 />
               </div>
 
               {/* 描述 */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-body">
                   预设描述
                 </label>
                 <textarea
@@ -431,13 +431,13 @@ export default function UploadPresetPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="详细描述您的预设特点和使用场景..."
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full rounded-lg border border-hairline bg-white px-4 py-2.5 text-ink outline-none focus:border-[#222222]"
                 />
               </div>
 
               {/* DAW 选择 */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-body">
                   DAW <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -449,7 +449,7 @@ export default function UploadPresetPage() {
                     setFormatError('');
                   }}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full rounded-lg border border-hairline bg-white px-4 py-2.5 text-ink outline-none focus:border-[#222222]"
                 >
                   <option value="">选择 DAW</option>
                   {daws.map((dawName) => (
@@ -459,7 +459,7 @@ export default function UploadPresetPage() {
                   ))}
                 </select>
                 {daw && (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-xs text-muted-custom">
                     支持的格式：{formatsByDAW[daw].join(', ')}
                   </p>
                 )}
@@ -467,7 +467,7 @@ export default function UploadPresetPage() {
 
               {/* 标签 */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-body">
                   音乐风格标签
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -478,8 +478,8 @@ export default function UploadPresetPage() {
                       onClick={() => toggleTag(tag.name)}
                       className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                         selectedTags.includes(tag.name)
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          ? 'bg-brand text-white'
+                          : 'bg-surface-soft text-body hover:bg-surface-strong'
                       }`}
                     >
                       {tag.name}
@@ -495,9 +495,9 @@ export default function UploadPresetPage() {
                   id="isPublic"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  className="w-4 h-4 text-[#ff385c] border-gray-300 rounded focus:ring-purple-500"
                 />
-                <label htmlFor="isPublic" className="text-sm text-gray-700 dark:text-gray-300">
+                <label htmlFor="isPublic" className="text-sm text-body">
                   公开预设（其他用户可以查看和下载）
                 </label>
               </div>
@@ -505,11 +505,11 @@ export default function UploadPresetPage() {
 
             {/* 文件上传 */}
             <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">文件上传</h2>
+              <h2 className="text-xl font-bold text-ink mb-4">文件上传</h2>
               
               {/* 预设文件 */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-body">
                   预设文件 <span className="text-red-500">*</span>
                 </label>
                 
@@ -525,7 +525,7 @@ export default function UploadPresetPage() {
                     />
                     <div className={`px-4 py-2 text-center text-sm rounded-lg border transition-colors ${
                       daw 
-                        ? 'border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer' 
+                        ? 'border-[#ff385c] text-[#ff385c] hover:bg-surface-soft cursor-pointer' 
                         : 'border-gray-300 text-gray-400 cursor-not-allowed'
                     }`}>
                       选择文件
@@ -543,7 +543,7 @@ export default function UploadPresetPage() {
                     />
                     <div className={`px-4 py-2 text-center text-sm rounded-lg border transition-colors ${
                       daw 
-                        ? 'border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer' 
+                        ? 'border-[#ff385c] text-[#ff385c] hover:bg-surface-soft cursor-pointer' 
                         : 'border-gray-300 text-gray-400 cursor-not-allowed'
                     }`}>
                       选择文件夹
@@ -554,7 +554,7 @@ export default function UploadPresetPage() {
                 <div className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
                   formatError 
                     ? 'border-red-500 dark:border-red-500' 
-                    : 'border-gray-300 dark:border-gray-600'
+                    : 'border-hairline'
                 }`}>
                   {isFolderUpload && presetFiles.length > 0 ? (
                     <div className="text-center relative">
@@ -571,13 +571,13 @@ export default function UploadPresetPage() {
                       <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                       </svg>
-                      <p className="mt-2 text-sm text-gray-900 dark:text-white font-medium">
+                      <p className="mt-2 text-sm text-ink font-medium">
                         已选择文件夹，找到 {presetFiles.length} 个预设文件：
                       </p>
                       <div className="mt-2 max-h-32 overflow-y-auto space-y-1.5 text-left px-4">
                         {presetFiles.map((file, index) => (
                           <div key={index} className="flex items-center justify-between gap-2 group">
-                            <p className="text-xs text-gray-600 dark:text-gray-400 flex-1 truncate">
+                            <p className="text-xs text-muted-custom flex-1 truncate">
                               {index + 1}. {file.name}
                             </p>
                             <button
@@ -599,7 +599,7 @@ export default function UploadPresetPage() {
                         </p>
                       )}
                       {uploadProgress.preset && (
-                        <p className="mt-1 text-xs text-purple-600">上传中...</p>
+                        <p className="mt-1 text-xs text-[#ff385c]">上传中...</p>
                       )}
                     </div>
                   ) : presetFile ? (
@@ -617,7 +617,7 @@ export default function UploadPresetPage() {
                       <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
-                      <p className="mt-2 text-sm text-gray-900 dark:text-white font-medium">
+                      <p className="mt-2 text-sm text-ink font-medium">
                         {presetFile.name}
                       </p>
                       {format && (
@@ -626,7 +626,7 @@ export default function UploadPresetPage() {
                         </p>
                       )}
                       {uploadProgress.preset && (
-                        <p className="mt-1 text-xs text-purple-600">上传中...</p>
+                        <p className="mt-1 text-xs text-[#ff385c]">上传中...</p>
                       )}
                     </div>
                   ) : (
@@ -634,7 +634,7 @@ export default function UploadPresetPage() {
                       <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
-                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="mt-2 text-sm text-muted-custom">
                         {daw ? '请选择预设文件或文件夹' : '请先选择 DAW'}
                       </p>
                     </div>
@@ -652,10 +652,10 @@ export default function UploadPresetPage() {
 
               {/* 封面图片 */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-body">
                   封面图片（可选）
                 </label>
-                <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                <div className="relative border-2 border-dashed border-hairline rounded-lg p-6 hover:border-[#ff385c] transition-colors">
                   <input
                     type="file"
                     accept="image/*"
@@ -667,16 +667,16 @@ export default function UploadPresetPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     {coverImage ? (
-                      <p className="mt-2 text-sm text-gray-900 dark:text-white font-medium">
+                      <p className="mt-2 text-sm text-ink font-medium">
                         {coverImage.name}
                       </p>
                     ) : (
-                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="mt-2 text-sm text-muted-custom">
                         点击或拖拽上传封面图片
                       </p>
                     )}
                     {uploadProgress.cover && (
-                      <p className="mt-1 text-xs text-purple-600">上传中...</p>
+                      <p className="mt-1 text-xs text-[#ff385c]">上传中...</p>
                     )}
                   </div>
                 </div>
@@ -684,10 +684,10 @@ export default function UploadPresetPage() {
 
               {/* 预览音频 */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-body">
                   预览音频（可选）
                 </label>
-                <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                <div className="relative border-2 border-dashed border-hairline rounded-lg p-6 hover:border-[#ff385c] transition-colors">
                   <input
                     type="file"
                     accept="audio/*"
@@ -699,16 +699,16 @@ export default function UploadPresetPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
                     {previewAudio ? (
-                      <p className="mt-2 text-sm text-gray-900 dark:text-white font-medium">
+                      <p className="mt-2 text-sm text-ink font-medium">
                         {previewAudio.name}
                       </p>
                     ) : (
-                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="mt-2 text-sm text-muted-custom">
                         点击或拖拽上传预览音频
                       </p>
                     )}
                     {uploadProgress.audio && (
-                      <p className="mt-1 text-xs text-purple-600">上传中...</p>
+                      <p className="mt-1 text-xs text-[#ff385c]">上传中...</p>
                     )}
                   </div>
                 </div>
@@ -720,7 +720,7 @@ export default function UploadPresetPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand py-3 px-6 font-medium text-white transition-colors hover:bg-[#e00b41] disabled:opacity-60"
               >
                 {loading ? (
                   <>
@@ -741,7 +741,7 @@ export default function UploadPresetPage() {
                 type="button"
                 onClick={() => router.push('/presets')}
                 disabled={loading}
-                className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="rounded-lg border border-hairline px-6 py-3 font-medium text-body transition-colors hover:bg-surface-soft disabled:opacity-50"
               >
                 取消
               </button>
